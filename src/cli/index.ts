@@ -66,7 +66,7 @@ program
   });
 
 const renderCommand = new Command("render")
-  .argument("<input>", "Markdown file, glob, or folder")
+  .argument("[input]", "Markdown file, glob, or folder")
   .option("-o, --output <file>", "Output PDF file (single input)")
   .option("--out-dir <dir>", "Output directory for multiple inputs")
   .option("--theme <name>", "Built-in theme name")
@@ -92,7 +92,7 @@ const renderCommand = new Command("render")
 program
   .command("watch")
   .description("Watch files and re-render on changes")
-  .argument("<input>", "Markdown file, glob, or folder")
+  .argument("[input]", "Markdown file, glob, or folder")
   .option("--out-dir <dir>", "Output directory for multiple inputs")
   .option("--config <path>", "Config file path")
   .option("--renderer <name>", "Renderer: chromium or lite")
@@ -110,7 +110,7 @@ async function runConversion({
   cmd,
   watch
 }: {
-  inputArg: string;
+  inputArg: string | undefined;
   opts: Record<string, any>;
   cmd: Command;
   watch: boolean;
@@ -139,9 +139,17 @@ async function runConversion({
     "pageNumbers"
   ]);
 
-  const inputs = await resolveInputs(inputArg);
+  const resolvedInput = inputArg ?? config.inputs ?? "";
+  if (!resolvedInput || (Array.isArray(resolvedInput) && resolvedInput.length === 0)) {
+    console.error("No input provided and no config.inputs found.");
+    process.exit(1);
+  }
+
+  const inputList = Array.isArray(resolvedInput) ? resolvedInput : [resolvedInput];
+  const inputSets = await Promise.all(inputList.map((input) => resolveInputs(input)));
+  const inputs = Array.from(new Set(inputSets.flat())).sort();
   if (inputs.length === 0) {
-    console.error(`No inputs found for: ${inputArg}`);
+    console.error(`No inputs found for: ${Array.isArray(resolvedInput) ? resolvedInput.join(", ") : resolvedInput}`);
     process.exit(4);
   }
 
