@@ -11,7 +11,7 @@ import { getRenderer } from "../renderers/index.js";
 import { resolveAsset } from "../assets/resolveAsset.js";
 import { runPostParse, runPostRender, runPreParse, runPreRender } from "../plugins/registry.js";
 import type { ConvertInput, ConvertOptions, HeaderFooterOptions } from "../types.js";
-import type { MdPdfPlugin, PluginContext } from "../plugins/types.js";
+import type { PluginContext } from "../plugins/types.js";
 import { escapeHtml } from "../utils/html.js";
 
 const DEFAULTS = {
@@ -70,7 +70,7 @@ export async function convertMarkdownToPdfInternal(
     addAsset: (url) => resolveAsset(url, { baseDir, allowRemote: resolved.allowRemote, cacheDir })
   };
 
-  let content = markdown;
+  let content = await runPreParse(markdown, plugins, ctx);
   const templateData: Record<string, string> = {};
 
   if (resolved.frontmatter) {
@@ -80,8 +80,6 @@ export async function convertMarkdownToPdfInternal(
       templateData[key] = String(value);
     }
   }
-
-  content = await runPreParse(content, plugins, ctx);
 
   const { css: themeCss, templates } = await loadTheme({
     theme: resolved.theme,

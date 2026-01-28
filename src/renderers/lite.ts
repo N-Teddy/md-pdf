@@ -3,7 +3,7 @@ import { htmlToText } from "html-to-text";
 import type { RenderOptions, Renderer } from "./types.js";
 
 export class LiteRenderer implements Renderer {
-  name: "lite" = "lite";
+  name = "lite" as const;
 
   async render(options: RenderOptions): Promise<Buffer> {
     const text = htmlToText(options.html, {

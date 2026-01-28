@@ -23,6 +23,7 @@ coverage
 .eslintcache
 .vite
 .vitest
+.md2pdf-cache
 
 # Editor
 .idea

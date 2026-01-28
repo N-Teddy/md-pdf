@@ -3,7 +3,7 @@ import type { PDFOptions } from "playwright";
 import type { RenderOptions, Renderer } from "./types.js";
 
 export class ChromiumRenderer implements Renderer {
-  name: "chromium" = "chromium";
+  name = "chromium" as const;
 
   async render(options: RenderOptions): Promise<Buffer> {
     const browser = await chromium.launch({ headless: true });

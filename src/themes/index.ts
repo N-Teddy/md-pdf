@@ -91,11 +91,16 @@ function resolveThemePath(relativePath: string): string {
 
 function findPackageRoot(startDir: string): string {
   let current = startDir;
-  while (true) {
+  let searching = true;
+  while (searching) {
     const candidate = path.join(current, "package.json");
     if (fsSync.existsSync(candidate)) return current;
     const parent = path.dirname(current);
-    if (parent === current) return startDir;
-    current = parent;
+    if (parent === current) {
+      searching = false;
+    } else {
+      current = parent;
+    }
   }
+  return startDir;
 }
