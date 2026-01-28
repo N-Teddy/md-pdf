@@ -29,5 +29,7 @@ export async function convertMarkdownToPdf(
   _input: ConvertInput,
   _options: ConvertOptions = {}
 ): Promise<Buffer | void> {
+  void _input;
+  void _options;
   throw new Error("Not implemented. Phase 3 will add the rendering pipeline.");
 }
