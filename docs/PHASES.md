@@ -4,15 +4,15 @@
 
 Checklist
 
-- [ ] CLI: `md2pdf <input.md> -o <output.pdf>`
-- [ ] API: `convertMarkdownToPdf(input, options)`
-- [ ] Default theme (print-ready typography, margins)
-- [ ] Code blocks with syntax highlighting
-- [ ] Images and links
-- [ ] Cover page support
-- [ ] Header/footer with page numbers
-- [ ] Offline mode (no remote assets) with bundled fonts
-- [ ] Deterministic output for the same input
+- [x] CLI: `md2pdf <input.md> -o <output.pdf>`
+- [x] API: `convertMarkdownToPdf(input, options)`
+- [x] Default theme (print-ready typography, margins)
+- [x] Code blocks with syntax highlighting
+- [x] Images and links
+- [x] Cover page support
+- [x] Header/footer with page numbers
+- [x] Offline mode (no remote assets) with bundled fonts
+- [x] Deterministic output for the same input
 
 ## Post-MVP (nice-to-have)
 
@@ -34,3 +34,10 @@ Checklist
 - [ ] Layout regions (multi-column, floats)
 - [ ] Plugin marketplace and theme gallery
 - [ ] Incremental rendering for large docs
+
+## Phase 4 (QA + Release Prep)
+
+Checklist
+
+- [x] docs/TESTING.md created
+- [x] docs/RELEASE.md created
