@@ -4,6 +4,11 @@
 
 md-pdf is a production-grade Node.js package that converts Markdown to high-quality, print-ready PDF using a deterministic, themeable rendering pipeline. It ships as both a CLI tool and a programmatic API.
 
+## Setup
+
+- Install Playwright browsers (required for rendering): `npx playwright install --with-deps`
+- Offline mode blocks remote assets by default; enable with `--allow-remote` or `allowRemote: true`.
+
 ## Key Features
 
 MVP

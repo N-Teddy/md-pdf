@@ -1,0 +1,169 @@
+:root {
+  --font-body: "Noto Serif";
+  --font-heading: "Noto Sans";
+  --font-mono: "Noto Sans Mono";
+  --text-color: #111111;
+  --muted-color: #555555;
+  --link-color: #0b61ff;
+  --border-color: #dddddd;
+  --code-bg: #f5f5f5;
+}
+
+@font-face {
+  font-family: "Noto Serif";
+  src: url("__FONT_DIR__/NotoSerif-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Serif";
+  src: url("__FONT_DIR__/NotoSerif-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Serif";
+  src: url("__FONT_DIR__/NotoSerif-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans";
+  src: url("__FONT_DIR__/NotoSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans";
+  src: url("__FONT_DIR__/NotoSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans Mono";
+  src: url("__FONT_DIR__/NotoSansMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-body), serif;
+  color: var(--text-color);
+  font-size: 12pt;
+  line-height: 1.55;
+}
+
+main.content {
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 1.2em 0 0.4em;
+}
+
+h1 { font-size: 24pt; }
+h2 { font-size: 18pt; }
+h3 { font-size: 14pt; }
+h4 { font-size: 12pt; }
+
+p { margin: 0 0 0.9em; }
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+a:hover { text-decoration: underline; }
+
+ul, ol {
+  margin: 0 0 1em 1.2em;
+}
+
+blockquote {
+  margin: 0 0 1em;
+  padding: 0.2em 0 0.2em 0.8em;
+  border-left: 3px solid var(--border-color);
+  color: var(--muted-color);
+}
+
+pre {
+  background: var(--code-bg);
+  padding: 12px 14px;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+code {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5pt;
+}
+
+pre code {
+  font-size: 10pt;
+}
+
+pre.shiki {
+  background: var(--code-bg) !important;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1em;
+  font-size: 11pt;
+}
+
+table th,
+table td {
+  border: 1px solid var(--border-color);
+  padding: 6px 8px;
+  vertical-align: top;
+}
+
+table th {
+  font-weight: 700;
+  font-family: var(--font-heading), sans-serif;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 1.5em 0;
+}
+
+.cover {
+  page-break-after: always;
+  break-after: page;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
