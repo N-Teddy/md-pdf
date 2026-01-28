@@ -1,14 +1,17 @@
 # CLI
 
 ## Command
+
 `md2pdf [input] [options]`
 
 ## Inputs
+
 - Single file: `md2pdf README.md`
 - Glob: `md2pdf docs/**/*.md`
 - Folder: `md2pdf ./docs --out-dir ./dist`
 
 ## Options
+
 - `-o, --output <file>`: output PDF file (single input only)
 - `--out-dir <dir>`: output directory for batch conversion
 - `--theme <name>`: built-in theme name (default: `default`)
@@ -29,7 +32,9 @@
 - `--verbose`: debug output
 
 ## Config File
+
 Supported names (auto-discovered in CWD):
+
 - `md2pdf.config.js`
 - `md2pdf.config.cjs`
 - `md2pdf.config.mjs`
@@ -37,24 +42,25 @@ Supported names (auto-discovered in CWD):
 - `md2pdf.config.ts` (requires runtime TS loader)
 
 Example `md2pdf.config.js`:
+
 ```js
 export default {
-  theme: "default",
-  pageSize: "A4",
-  margin: "1in,1in,1in,1in",
-  toc: true,
-  mermaid: true,
-  math: true,
-  allowRemote: false,
-  header: { title: "My Document" },
-  footer: { pageNumbers: true }
+	theme: "default",
+	pageSize: "A4",
+	margin: "1in,1in,1in,1in",
+	toc: true,
+	mermaid: true,
+	math: true,
+	allowRemote: false,
+	header: { title: "My Document" },
+	footer: { pageNumbers: true }
 };
 ```
 
 ## Exit Codes
+
 - `0`: success
 - `1`: usage error (invalid args)
 - `2`: render error
 - `3`: config error
 - `4`: file not found
-

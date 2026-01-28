@@ -1,62 +1,62 @@
 {
-  "name": "md-pdf",
-  "version": "0.1.0",
-  "description": "Print-ready Markdown to PDF converter (CLI + API)",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "md2pdf": "dist/cli/index.js"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "dist",
-    "docs",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "clean": "rm -rf dist",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "format": "prettier --write \"**/*.{ts,md,json,yml,yaml}\"",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "keywords": [
-    "markdown",
-    "pdf",
-    "converter",
-    "cli",
-    "typescript",
-    "playwright"
-  ],
-  "author": "",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
-  "devDependencies": {
-    "@changesets/cli": "^2.27.8",
-    "@types/node": "^20.11.30",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.3.3",
-    "tsup": "^8.2.4",
-    "typescript": "^5.5.4",
-    "vitest": "^2.0.5"
-  },
-  "packageManager": "pnpm@10.28.1"
+	"name": "md-pdf",
+	"version": "0.1.0",
+	"description": "Print-ready Markdown to PDF converter (CLI + API)",
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"bin": {
+		"md2pdf": "dist/cli/index.js"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./package.json": "./package.json"
+	},
+	"files": [
+		"dist",
+		"docs",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"clean": "rm -rf dist",
+		"lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+		"format": "prettier --write \"**/*.{ts,md,json,yml,yaml}\"",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"keywords": [
+		"markdown",
+		"pdf",
+		"converter",
+		"cli",
+		"typescript",
+		"playwright"
+	],
+	"author": "",
+	"license": "MIT",
+	"engines": {
+		"node": ">=18"
+	},
+	"devDependencies": {
+		"@changesets/cli": "^2.27.8",
+		"@types/node": "^20.11.30",
+		"@typescript-eslint/eslint-plugin": "^7.18.0",
+		"@typescript-eslint/parser": "^7.18.0",
+		"eslint": "^8.57.0",
+		"eslint-config-prettier": "^9.1.0",
+		"prettier": "^3.3.3",
+		"tsup": "^8.2.4",
+		"typescript": "^5.5.4",
+		"vitest": "^2.0.5"
+	},
+	"packageManager": "pnpm@10.28.1"
 }

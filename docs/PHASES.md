@@ -1,7 +1,9 @@
 # Product Phases
 
 ## MVP (must ship)
+
 Checklist
+
 - [ ] CLI: `md2pdf <input.md> -o <output.pdf>`
 - [ ] API: `convertMarkdownToPdf(input, options)`
 - [ ] Default theme (print-ready typography, margins)
@@ -13,7 +15,9 @@ Checklist
 - [ ] Deterministic output for the same input
 
 ## Post-MVP (nice-to-have)
+
 Checklist
+
 - [ ] Multiple built-in themes
 - [ ] Watch mode for local development
 - [ ] TOC generation with section numbering
@@ -22,10 +26,11 @@ Checklist
 - [ ] Performance optimizations and caching
 
 ## V2 (advanced)
+
 Checklist
+
 - [ ] PDF/A and archival modes
 - [ ] Advanced pagination control (widows/orphans)
 - [ ] Layout regions (multi-column, floats)
 - [ ] Plugin marketplace and theme gallery
 - [ ] Incremental rendering for large docs
-

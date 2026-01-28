@@ -1,10 +1,13 @@
 # md-pdf
 
 ## Overview
+
 md-pdf is a production-grade Node.js package that converts Markdown to high-quality, print-ready PDF using a deterministic, themeable rendering pipeline. It ships as both a CLI tool and a programmatic API.
 
 ## Key Features
+
 MVP
+
 - Markdown to PDF with consistent typography, margins, and spacing
 - Headings, lists, tables, blockquotes, links
 - Code blocks with syntax highlighting
@@ -14,6 +17,7 @@ MVP
 - Theme support (default theme + custom themes)
 
 Roadmap
+
 - Multiple built-in themes
 - Per-document theme overrides
 - Table of contents and section numbering
@@ -22,7 +26,9 @@ Roadmap
 - Faster incremental builds in watch mode
 
 ## Examples
+
 CLI
+
 - Convert one file to a PDF
   - `md2pdf README.md -o README.pdf`
 - Convert a folder to PDFs
@@ -31,19 +37,21 @@ CLI
   - `md2pdf report.md --theme-file ./themes/report.css --cover ./cover.md`
 
 API
+
 ```ts
 import { convertMarkdownToPdf } from "md-pdf";
 
 await convertMarkdownToPdf({
-  inputPath: "./notes.md",
-  outputPath: "./notes.pdf",
-  theme: "default",
-  header: { title: "Notes" },
-  footer: { pageNumbers: true }
+	inputPath: "./notes.md",
+	outputPath: "./notes.pdf",
+	theme: "default",
+	header: { title: "Notes" },
+	footer: { pageNumbers: true }
 });
 ```
 
 ## Supported Markdown Features
+
 - Headings (H1-H6)
 - Paragraphs, emphasis, strong
 - Ordered and unordered lists
@@ -58,7 +66,7 @@ await convertMarkdownToPdf({
 - Table of contents (optional)
 
 ## Offline Operation
+
 - Fully offline mode is supported.
 - Default theme fonts are bundled in the package.
 - Remote images can be disabled for strict offline builds.
-
