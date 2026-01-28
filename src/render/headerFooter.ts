@@ -1,36 +1,46 @@
 import { escapeHtml } from "../utils/html.js";
+import type { HeaderFooterTemplates } from "../renderers/types.js";
 
 export interface HeaderFooterOptions {
-	title?: string;
-	pageNumbers?: boolean;
-	templateHtml?: string;
+  title?: string;
+  pageNumbers?: boolean;
+  templateHtml?: string;
 }
 
-export function buildHeaderFooterTemplates(
-	header?: HeaderFooterOptions,
-	footer?: HeaderFooterOptions
-) {
-	const headerTemplate = header?.templateHtml ?? defaultHeaderTemplate(header);
-	const footerTemplate = footer?.templateHtml ?? defaultFooterTemplate(footer);
+export interface HeaderFooterBuildOptions {
+  header?: HeaderFooterOptions;
+  footer?: HeaderFooterOptions;
+  themeHeaderTemplate?: string;
+  themeFooterTemplate?: string;
+  templateData?: Record<string, string>;
+}
 
-	return {
-		headerTemplate: headerTemplate ?? "",
-		footerTemplate: footerTemplate ?? "",
-		displayHeaderFooter: Boolean(headerTemplate || footerTemplate)
-	};
+export function buildHeaderFooterTemplates(options: HeaderFooterBuildOptions): HeaderFooterTemplates {
+  const { header, footer, themeHeaderTemplate, themeFooterTemplate, templateData } = options;
+
+  const headerTemplate =
+    header?.templateHtml ?? themeHeaderTemplate ?? defaultHeaderTemplate(header);
+  const footerTemplate =
+    footer?.templateHtml ?? themeFooterTemplate ?? defaultFooterTemplate(footer);
+
+  return {
+    headerTemplate: headerTemplate ? renderTemplate(headerTemplate, templateData) : "",
+    footerTemplate: footerTemplate ? renderTemplate(footerTemplate, templateData) : "",
+    displayHeaderFooter: Boolean(headerTemplate || footerTemplate)
+  };
 }
 
 function defaultHeaderTemplate(header?: HeaderFooterOptions) {
-	if (!header?.title) return "";
-	const title = escapeHtml(header.title);
-	return baseTemplate(`
+  if (!header?.title) return "";
+  const title = escapeHtml(header.title);
+  return baseTemplate(`
     <div class="hf-title">${title}</div>
   `);
 }
 
 function defaultFooterTemplate(footer?: HeaderFooterOptions) {
-	if (!footer?.pageNumbers) return "";
-	return baseTemplate(`
+  if (!footer?.pageNumbers) return "";
+  return baseTemplate(`
     <div class="hf-page">
       <span class="pageNumber"></span> / <span class="totalPages"></span>
     </div>
@@ -38,7 +48,7 @@ function defaultFooterTemplate(footer?: HeaderFooterOptions) {
 }
 
 function baseTemplate(inner: string) {
-	return `
+  return `
     <style>
       .hf-root {
         width: 100%;
@@ -53,4 +63,12 @@ function baseTemplate(inner: string) {
     </style>
     <div class="hf-root">${inner}</div>
   `;
+}
+
+function renderTemplate(template: string, data?: Record<string, string>) {
+  if (!data) return template;
+  return template.replace(/\{\{\s*([\w.-]+)\s*\}\}/g, (_match, key) => {
+    const value = data[key];
+    return value ? escapeHtml(value) : "";
+  });
 }

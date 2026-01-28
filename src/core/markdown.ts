@@ -3,6 +3,7 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkToc from "remark-toc";
+import remarkFrontmatter from "remark-frontmatter";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import rehypeKatex from "rehype-katex";
@@ -13,36 +14,43 @@ import { rehypeShiki } from "./rehype-shiki.js";
 import { rehypeImages } from "./rehype-images.js";
 
 export interface MarkdownRenderOptions {
-	baseDir: string;
-	toc: boolean;
-	mermaid: boolean;
-	math: boolean;
-	allowRemote: boolean;
-	shikiTheme: string;
-	remarkPlugins?: any[];
-	rehypePlugins?: any[];
+  baseDir: string;
+  toc: boolean;
+  mermaid: boolean;
+  math: boolean;
+  frontmatter: boolean;
+  allowRemote: boolean;
+  shikiTheme: string;
+  remarkPlugins?: any[];
+  rehypePlugins?: any[];
+  postParseHook?: (mdast: unknown) => Promise<void> | void;
 }
 
-export async function markdownToHtml(
-	markdown: string,
-	options: MarkdownRenderOptions
-): Promise<string> {
-	const processor = unified()
-		.use(remarkParse)
-		.use(remarkGfm)
-		.use(options.toc ? remarkToc : () => {})
-		.use(options.math ? remarkMath : () => {})
-		.use(options.remarkPlugins ?? [])
-		.use(remarkRehype, { allowDangerousHtml: true })
-		.use(rehypeSlug)
-		.use(rehypeAutolinkHeadings, { behavior: "wrap" })
-		.use(options.mermaid ? rehypeMermaid : () => {})
-		.use(rehypeImages, { baseDir: options.baseDir, allowRemote: options.allowRemote })
-		.use(rehypeShiki({ theme: options.shikiTheme }))
-		.use(options.math ? rehypeKatex : () => {})
-		.use(options.rehypePlugins ?? [])
-		.use(rehypeStringify, { allowDangerousHtml: true });
+export async function markdownToHtml(markdown: string, options: MarkdownRenderOptions): Promise<string> {
+  const processor = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(options.toc ? remarkToc : () => {})
+    .use(options.frontmatter ? remarkFrontmatter : () => {})
+    .use(options.math ? remarkMath : () => {})
+    .use(options.remarkPlugins ?? [])
+    .use(function postParseHook() {
+      return async (tree: unknown) => {
+        if (options.postParseHook) {
+          await options.postParseHook(tree);
+        }
+      };
+    })
+    .use(remarkRehype, { allowDangerousHtml: false })
+    .use(rehypeSlug)
+    .use(rehypeAutolinkHeadings, { behavior: "wrap" })
+    .use(options.mermaid ? rehypeMermaid : () => {})
+    .use(rehypeImages, { baseDir: options.baseDir, allowRemote: options.allowRemote })
+    .use(rehypeShiki({ theme: options.shikiTheme }))
+    .use(options.math ? rehypeKatex : () => {})
+    .use(options.rehypePlugins ?? [])
+    .use(rehypeStringify, { allowDangerousHtml: false });
 
-	const file = await processor.process(markdown);
-	return String(file);
+  const file = await processor.process(markdown);
+  return String(file);
 }

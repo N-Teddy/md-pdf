@@ -1,20 +1,16 @@
 export interface HtmlTemplateOptions {
-	bodyHtml: string;
-	coverHtml?: string;
-	themeCss: string;
-	katexCss?: string;
-	katexCssHref?: string;
-	includeMermaidScript?: string;
+  bodyHtml: string;
+  coverHtml?: string;
+  themeCss: string;
+  katexCss?: string;
+  katexCssHref?: string;
+  includeMermaidScript?: string;
 }
 
 export function buildHtmlDocument(options: HtmlTemplateOptions): string {
-	const { bodyHtml, coverHtml, themeCss, katexCss, katexCssHref, includeMermaidScript } = options;
+  const { bodyHtml, coverHtml, themeCss, katexCss, katexCssHref, includeMermaidScript } = options;
 
-	const coverSection = coverHtml
-		? `<section class="cover">${coverHtml}</section><div class="page-break"></div>`
-		: "";
-
-	return `<!doctype html>
+  return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -24,7 +20,7 @@ export function buildHtmlDocument(options: HtmlTemplateOptions): string {
   ${katexCss ? `<style>${katexCss}</style>` : ""}
 </head>
 <body>
-  ${coverSection}
+  ${coverHtml ?? ""}
   <main class="content">${bodyHtml}</main>
   ${includeMermaidScript ? `<script>${includeMermaidScript}</script>` : ""}
 </body>
