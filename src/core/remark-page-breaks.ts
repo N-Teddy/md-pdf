@@ -1,5 +1,5 @@
 import { visit } from "unist-util-visit";
-import type { Root, Parent, Text } from "mdast";
+import type { Root, Paragraph, Text } from "mdast";
 
 const PAGE_BREAK = "__MD2PDF_PAGE_BREAK__";
 const SECTION_BREAK = "__MD2PDF_SECTION_BREAK__";
@@ -18,7 +18,7 @@ export function remarkPageBreaks() {
   };
 }
 
-function paragraphWithToken(token: string): Parent {
+function paragraphWithToken(token: string): Paragraph {
   return {
     type: "paragraph",
     children: [{ type: "text", value: token } as Text]

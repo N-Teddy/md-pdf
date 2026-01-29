@@ -18,6 +18,8 @@ import { remarkCrossRefs } from "./remark-cross-refs.js";
 import { remarkFormatCode } from "../formatters/remark-format-code.js";
 import type { FormatterOptions } from "../formatters/registry.js";
 
+const noopPlugin: Plugin = () => {};
+
 export interface MarkdownRenderOptions {
   baseDir: string;
   toc: boolean;
@@ -35,39 +37,39 @@ export interface MarkdownRenderOptions {
 }
 
 export async function markdownToHtml(markdown: string, options: MarkdownRenderOptions): Promise<string> {
-  const processor = unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkPageBreaks)
-    .use(remarkCrossRefs)
-    .use(options.toc ? remarkToc : () => {})
-    .use(options.frontmatter ? remarkFrontmatter : () => {})
-    .use(options.math ? remarkMath : () => {})
-    .use(options.formatCode ? remarkFormatCode({ formatter: options.formatter }) : () => {})
-    .use(options.remarkPlugins ?? [])
-    .use(createPostParseHook(options))
-    .use(remarkRehype, { allowDangerousHtml: false })
-    .use(rehypeSlug)
-    .use(rehypeAutolinkHeadings, { behavior: "wrap" })
-    .use(rehypePageBreaks)
-    .use(options.mermaid ? rehypeMermaid : () => {})
-    .use(rehypeImages, { baseDir: options.baseDir, allowRemote: options.allowRemote })
-    .use(rehypeShiki, {
-      defaultTheme: options.shikiTheme,
-      themeByLanguage: options.themeByLanguage
-    })
-    .use(options.math ? rehypeKatex : () => {})
-    .use(options.rehypePlugins ?? [])
-    .use(rehypeStringify, { allowDangerousHtml: false });
+  const processor: any = unified();
+  processor.use(remarkParse);
+  processor.use(remarkGfm);
+  processor.use(remarkPageBreaks);
+  processor.use(remarkCrossRefs);
+  processor.use(options.toc ? remarkToc : noopPlugin);
+  processor.use(options.frontmatter ? remarkFrontmatter : noopPlugin);
+  processor.use(options.math ? remarkMath : noopPlugin);
+  processor.use(options.formatCode ? remarkFormatCode({ formatter: options.formatter }) : noopPlugin);
+  processor.use(options.remarkPlugins ?? []);
+  processor.use(remarkRehype, { allowDangerousHtml: false });
+  processor.use(rehypeSlug);
+  processor.use(rehypeAutolinkHeadings, { behavior: "wrap" });
+  processor.use(rehypePageBreaks);
+  processor.use(options.mermaid ? rehypeMermaid : noopPlugin);
+  processor.use(rehypeImages, { baseDir: options.baseDir, allowRemote: options.allowRemote });
+  processor.use(rehypeShiki, {
+    defaultTheme: options.shikiTheme,
+    themeByLanguage: options.themeByLanguage
+  });
+  processor.use(options.math ? rehypeKatex : noopPlugin);
+  processor.use(options.rehypePlugins ?? []);
+  processor.use(rehypeStringify, { allowDangerousHtml: false });
+
+  if (options.postParseHook) {
+    const postParseHookPlugin: Plugin<[]> = () => {
+      return async (tree: unknown) => {
+        await options.postParseHook?.(tree);
+      };
+    };
+    processor.use(postParseHookPlugin);
+  }
 
   const file = await processor.process(markdown);
   return String(file);
-}
-
-function createPostParseHook(options: MarkdownRenderOptions): Plugin {
-  return () => async (tree: unknown) => {
-    if (options.postParseHook) {
-      await options.postParseHook(tree);
-    }
-  };
 }

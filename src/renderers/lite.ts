@@ -15,7 +15,7 @@ export class LiteRenderer implements Renderer {
     });
 
     const doc = new PDFDocument({
-      size: parsePageSize(options.pageSize),
+      size: parsePageSize(options.pageSize || "A4"),
       margins: parseMargin(options.margin)
     });
 
@@ -54,7 +54,9 @@ function parseMargin(margin: string | undefined) {
 
 function parsePageSize(pageSize: string) {
   if (pageSize.includes("x")) {
-    const [width, height] = pageSize.split("x").map((v) => v.trim());
+    const parts = pageSize.split("x").map((v) => v.trim());
+    const width = parts[0] ?? "8.5in";
+    const height = parts[1] ?? "11in";
     return [toPoints(width), toPoints(height)];
   }
   return pageSize as any;

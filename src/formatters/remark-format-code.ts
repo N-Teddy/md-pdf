@@ -12,12 +12,12 @@ export function remarkFormatCode(options: FormatCodeOptions) {
       if (!node || typeof node !== "object") return;
       if ((node as any).type !== "code") return;
       const codeNode = node as { lang?: string; value?: string };
-      const lang = normalizeLanguage(codeNode.lang) as string;
+      const lang: string = normalizeLanguage(codeNode.lang ?? "text");
       if (typeof codeNode.value !== "string") return;
 
       tasks.push(
         (async () => {
-          const formatted = await formatCode(codeNode.value, lang, options.formatter);
+          const formatted = await formatCode(codeNode.value as string, lang as string, options.formatter);
           if (formatted !== null) {
             codeNode.value = formatted;
           }
