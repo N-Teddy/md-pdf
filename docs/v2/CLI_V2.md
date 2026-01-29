@@ -11,6 +11,10 @@
 - `--config <path>`
 - `--watch`
 - `--toc --footnotes --math --mermaid`
+- `--format-code` / `--no-format-code` (chromium only)
+- `--formatter-print-width <n>` (chromium only)
+- `--formatter-tabs` (chromium only)
+- `--theme-map <path>` (JSON map of language -> theme)
 - `--renderer <chromium|lite>` (chromium default; lite used as fallback on chromium failure)
 - `--allow-remote`
 

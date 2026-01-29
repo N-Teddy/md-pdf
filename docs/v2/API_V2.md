@@ -11,6 +11,9 @@ export interface ConvertOptionsV2 {
   theme?: string;
   themeDir?: string;
   themeOverrides?: Record<string, string>;
+  formatCode?: boolean; // chromium only
+  formatter?: { useTabs?: boolean; printWidth?: number; tabWidth?: number };
+  themeByLanguage?: Record<string, string>;
   toc?: boolean;
   footnotes?: boolean;
   mermaid?: boolean;
