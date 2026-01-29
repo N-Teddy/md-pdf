@@ -19,7 +19,7 @@ export async function buildBookMarkdown(book: LoadedBook): Promise<string> {
   }
 
   for (let i = 0; i < chapters.length; i += 1) {
-    const filePath = chapters[i];
+    const filePath = chapters[i]!;
     const content = await fs.readFile(filePath, "utf8");
     parts.push(normalizeSection(content, path.basename(filePath)));
     if (i < chapters.length - 1) {

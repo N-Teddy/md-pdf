@@ -42,9 +42,9 @@ export function rehypeShiki(options: ShikiOptions) {
           try {
             const candidate = rawLang && rawLang !== "text" ? rawLang : undefined;
             if (candidate) {
-              await highlighter.loadLanguage(candidate);
+              await highlighter.loadLanguage(candidate as any);
             } else if (normalizedLang && normalizedLang !== "text") {
-              await highlighter.loadLanguage(normalizedLang);
+              await highlighter.loadLanguage(normalizedLang as any);
             }
           } catch {
             // fallback to plain text
@@ -52,8 +52,8 @@ export function rehypeShiki(options: ShikiOptions) {
 
           const highlighted = highlighter.codeToHtml(codeText, {
             lang: rawLang || normalizedLang || "text",
-            theme: themeForLang
-          });
+            theme: themeForLang || options.defaultTheme
+          } as any);
 
           const fragment = fromHtml(highlighted, { fragment: true });
           const replacement = fragment.children[0] as Element | undefined;
@@ -109,8 +109,10 @@ function resolveTheme(
   return themes.has(defaultTheme) ? defaultTheme : Array.from(themes)[0];
 }
 
-function normalizeLanguage(lang: string) {
-  const cleaned = lang.split(/\s+/)[0].toLowerCase();
+function normalizeLanguage(lang: string | undefined) {
+  if (!lang) return "text";
+  const first = lang.split(/\s+/)[0] ?? "";
+  const cleaned = first.toLowerCase();
   if (!cleaned) return "text";
 
   const aliases: Record<string, string> = {

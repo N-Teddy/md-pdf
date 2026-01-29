@@ -362,9 +362,9 @@ async function runWizard() {
       type: "text",
       name: "input",
       message: "Enter input path (file, folder, or glob)",
-      validate: async (value) => {
+      validate: async (value: string) => {
         if (!value) return "Input is required";
-        const inputs = await resolveInputs(value);
+        const inputs = await resolveInputs(String(value));
         return inputs.length > 0 ? true : "No inputs found for this input";
       }
     },
@@ -375,8 +375,9 @@ async function runWizard() {
     process.exit(1);
   }
 
-  const inputs = await resolveInputs(inputAnswer.input);
+  const inputs = await resolveInputs(String(inputAnswer.input));
   const multiple = inputs.length > 1;
+  const firstInput = inputs[0]!;
 
   const outputAnswer = await prompts(
     {
@@ -386,10 +387,10 @@ async function runWizard() {
       initial: multiple
         ? "./output"
         : path.join(
-            path.dirname(inputs[0]),
-            `${path.basename(inputs[0], path.extname(inputs[0]))}.pdf`
+            path.dirname(firstInput),
+            `${path.basename(firstInput, path.extname(firstInput))}.pdf`
           ),
-      validate: (value) => (value ? true : "Output path is required")
+      validate: (value: string) => (value ? true : "Output path is required")
     },
     { onCancel }
   );
@@ -431,8 +432,8 @@ async function runWizard() {
         type: "text",
         name: "themeFile",
         message: "Path to theme CSS file",
-        validate: async (value) => {
-          if (!value) return "Theme file path is required";
+      validate: async (value: string) => {
+        if (!value) return "Theme file path is required";
           try {
             await fs.access(path.resolve(value));
             return true;
@@ -443,15 +444,15 @@ async function runWizard() {
       },
       { onCancel }
     );
-    themeFile = answer.themeFile;
+    themeFile = answer.themeFile as string | undefined;
   } else if (themeModeAnswer.themeMode === "dir") {
     const answer = await prompts(
       {
         type: "text",
         name: "themeDir",
         message: "Path to theme directory",
-        validate: async (value) => {
-          if (!value) return "Theme directory is required";
+      validate: async (value: string) => {
+        if (!value) return "Theme directory is required";
           try {
             const stat = await fs.stat(path.resolve(value));
             return stat.isDirectory() ? true : "Theme path must be a directory";
@@ -462,7 +463,7 @@ async function runWizard() {
       },
       { onCancel }
     );
-    themeDir = answer.themeDir;
+    themeDir = answer.themeDir as string | undefined;
   }
 
   const featureAnswers = await prompts(
@@ -490,7 +491,7 @@ async function runWizard() {
       type: "text",
       name: "coverPath",
       message: "Cover page markdown (optional)",
-      validate: async (value) => {
+      validate: async (value: string) => {
         if (!value) return true;
         try {
           await fs.access(path.resolve(value));

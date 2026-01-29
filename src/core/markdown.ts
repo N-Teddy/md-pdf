@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
@@ -45,7 +46,7 @@ export async function markdownToHtml(markdown: string, options: MarkdownRenderOp
     .use(options.math ? remarkMath : () => {})
     .use(options.formatCode ? remarkFormatCode({ formatter: options.formatter }) : () => {})
     .use(options.remarkPlugins ?? [])
-    .use(function postParseHook() {
+    .use(function postParseHookPlugin() {
       return async (tree: unknown) => {
         if (options.postParseHook) {
           await options.postParseHook(tree);

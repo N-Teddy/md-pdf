@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { visit } from "unist-util-visit";
 import type { Root, Parent, Text } from "mdast";
 

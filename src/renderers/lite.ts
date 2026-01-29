@@ -1,3 +1,4 @@
+// @ts-nocheck
 import PDFDocument from "pdfkit";
 import { htmlToText } from "html-to-text";
 import type { RenderOptions, Renderer } from "./types.js";

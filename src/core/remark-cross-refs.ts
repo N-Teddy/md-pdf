@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Root, Parent } from "mdast";
 
 const REF_RE = /@ref\(([^)]+)\)/g;

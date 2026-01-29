@@ -25,32 +25,28 @@ const PARSER_BY_LANGUAGE: Record<string, prettier.BuiltInParserName> = {
   graphql: "graphql"
 };
 
-export function normalizeLanguage(lang: string | undefined): string | undefined {
-  if (!lang) return undefined;
-  const cleaned = lang.split(/\s+/)[0].toLowerCase();
-  if (!cleaned) return undefined;
-  return cleaned;
+export function normalizeLanguage(lang: string | undefined): string {
+  const parts = (lang ?? "").split(/\s+/);
+  const value = (parts[0] ?? "").toLowerCase();
+  if (!value) return "text";
+  return value;
 }
 
 export function getParserForLanguage(
-  lang: string | undefined
+  lang: string
 ): prettier.BuiltInParserName | undefined {
   const normalized = normalizeLanguage(lang);
-  if (!normalized) return undefined;
   return PARSER_BY_LANGUAGE[normalized];
 }
 
-export async function formatCode(
-  code: string,
-  lang: string | undefined,
-  options: FormatterOptions
-): Promise<string | null> {
+export async function formatCode(code: string, lang: string, options: FormatterOptions): Promise<string | null> {
   const parser = getParserForLanguage(lang);
   if (!parser) return null;
+  const parserName = parser as prettier.BuiltInParserName;
 
   try {
     const formatted = await prettier.format(code, {
-      parser,
+      parser: parserName,
       useTabs: options.useTabs ?? true,
       printWidth: options.printWidth,
       tabWidth: options.tabWidth
