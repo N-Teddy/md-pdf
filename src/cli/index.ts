@@ -191,6 +191,7 @@ async function runConversion({
           frontmatter: cliOptions.frontmatter ?? config.frontmatter,
           allowRemote: cliOptions.allowRemote ?? config.allowRemote,
           renderer: cliOptions.renderer ?? config.renderer,
+          fallbackRenderer: config.fallbackRenderer,
           header: cliOptions.title ? { title: cliOptions.title } : config.header,
           footer: {
             pageNumbers:

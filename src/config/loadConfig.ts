@@ -7,6 +7,7 @@ export interface MdPdfConfig {
   outDir?: string;
   watch?: boolean;
   renderer?: "chromium" | "lite";
+  fallbackRenderer?: "lite" | "none";
   theme?: string;
   themeDir?: string;
   themeFile?: string;

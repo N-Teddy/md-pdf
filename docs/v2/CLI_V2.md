@@ -11,7 +11,7 @@
 - `--config <path>`
 - `--watch`
 - `--toc --footnotes --math --mermaid`
-- `--renderer <chromium|lite>`
+- `--renderer <chromium|lite>` (chromium default; lite used as fallback on chromium failure)
 - `--allow-remote`
 
 ## Config Resolution
@@ -44,4 +44,3 @@ Config formats: `md2pdf.config.js`, `.cjs`, `.mjs`, `.json`, `.yaml`, `.yml`
 - Clear error messages with file context
 - Stable output paths for batch conversion
 - Minimal surprises: defaults are safe and offline-first
-

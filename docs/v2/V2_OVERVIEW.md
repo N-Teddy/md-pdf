@@ -13,7 +13,7 @@ V2 focuses on extensibility, higher-fidelity print output, and a more powerful C
 
 | Area | MVP | V2 |
 | --- | --- | --- |
-| Rendering | Chromium-only | Chromium default + optional non-Chromium renderer |
+| Rendering | Chromium-only | Chromium default + lite fallback renderer |
 | Extensibility | Limited options | Plugin API with lifecycle hooks |
 | Markdown | GFM + Mermaid + KaTeX | TOC + footnotes + frontmatter + extensible plugins |
 | Themes | CSS-only default theme | CSS + template system + per-doc overrides |
@@ -30,4 +30,3 @@ V2 focuses on extensibility, higher-fidelity print output, and a more powerful C
 - Experimental features are behind `experimental.*` options in config and API.
 - Each experimental feature includes a versioned flag and changelog note.
 - Experimental features can be changed or removed without semver guarantees until stabilized.
-

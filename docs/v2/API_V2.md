@@ -18,6 +18,7 @@ export interface ConvertOptionsV2 {
   frontmatter?: boolean;
   allowRemote?: boolean;
   renderer?: "chromium" | "lite";
+  fallbackRenderer?: "lite" | "none";
   plugins?: MdPdfPlugin[];
   experimental?: Record<string, boolean>;
 }
@@ -57,4 +58,3 @@ await convertBatch([
   { inputPath: "b.md", outputPath: "b.pdf" }
 ]);
 ```
-

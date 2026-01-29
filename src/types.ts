@@ -26,6 +26,7 @@ export interface ConvertOptions {
   frontmatter?: boolean;
   allowRemote?: boolean;
   renderer?: "chromium" | "lite";
+  fallbackRenderer?: "lite" | "none";
   remarkPlugins?: any[];
   rehypePlugins?: any[];
   plugins?: MdPdfPlugin[];

@@ -51,6 +51,7 @@ export async function convertMarkdownToPdfInternal(
     timeoutMs: options.timeoutMs ?? DEFAULTS.timeoutMs,
     shikiTheme: options.shikiTheme ?? DEFAULTS.shikiTheme,
     renderer: options.renderer ?? DEFAULTS.renderer,
+    fallbackRenderer: options.fallbackRenderer ?? "lite",
     remarkPlugins: options.remarkPlugins,
     rehypePlugins: options.rehypePlugins
   };
@@ -147,8 +148,9 @@ export async function convertMarkdownToPdfInternal(
     templateData
   });
 
-  const renderer = getRenderer(resolved.renderer);
-  const pdf = await renderer.render({
+  const pdf = await renderWithFallback({
+    renderer: resolved.renderer,
+    fallbackRenderer: resolved.fallbackRenderer,
     html,
     baseUrl: pathToFileURL(baseDir).toString(),
     pageSize: resolved.pageSize,
@@ -168,6 +170,50 @@ export async function convertMarkdownToPdfInternal(
   }
 
   return finalPdf;
+}
+
+async function renderWithFallback(options: {
+  renderer: "chromium" | "lite";
+  fallbackRenderer: "lite" | "none";
+  html: string;
+  baseUrl: string;
+  pageSize: string;
+  margin: string;
+  headerFooter: { headerTemplate?: string; footerTemplate?: string; displayHeaderFooter: boolean };
+  allowRemote: boolean;
+  timeoutMs: number;
+  mermaid: boolean;
+}) {
+  const renderer = getRenderer(options.renderer);
+  try {
+    return await renderer.render({
+      html: options.html,
+      baseUrl: options.baseUrl,
+      pageSize: options.pageSize,
+      margin: options.margin,
+      headerFooter: options.headerFooter,
+      allowRemote: options.allowRemote,
+      timeoutMs: options.timeoutMs,
+      mermaid: options.mermaid
+    });
+  } catch (err) {
+    if (options.renderer === "chromium" && options.fallbackRenderer === "lite") {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn(`Chromium render failed, falling back to lite: ${message}`);
+      const fallback = getRenderer("lite");
+      return fallback.render({
+        html: options.html,
+        baseUrl: options.baseUrl,
+        pageSize: options.pageSize,
+        margin: options.margin,
+        headerFooter: options.headerFooter,
+        allowRemote: options.allowRemote,
+        timeoutMs: options.timeoutMs,
+        mermaid: options.mermaid
+      });
+    }
+    throw err;
+  }
 }
 
 async function resolveInput(input: ConvertInput) {
