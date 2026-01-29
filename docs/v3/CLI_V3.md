@@ -4,6 +4,13 @@
 - `md2pdf book build --config book.yaml`
 - `md2pdf book preview --config book.yaml`
 
+## Examples
+- Build a book with a profile:
+  `md2pdf book build --config examples/v3/book/book.yaml --profile a4 --output ./dist/book.pdf`
+- Preview/watch a book:
+  `md2pdf book preview --config examples/v3/book/book.yaml --profile book-6x9`
+- Require Chromium for CI:
+  `md2pdf book build --config book.yaml --require-chromium`
 ## Pipeline Workflows
 - `md2pdf render` for single or batch documents
 - `md2pdf watch` for incremental rebuilds

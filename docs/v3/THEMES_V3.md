@@ -21,6 +21,10 @@
 - Size, margins, columns, font stacks, line-height
 - Validation ensures all required keys are present
 
+### Profile Defaults (V3 Prototype)
+- `a4`, `letter`, `book-6x9`
+- Each profile includes `columns` and `fontStacks` (body/heading/mono/CJK/RTL)
+
 ## Font Embedding and Licensing
 - Fonts must be embedded for reproducibility
 - Only license-safe fonts allowed in default bundles

@@ -8,7 +8,12 @@ import type { PublishOptions } from "./types.js";
 export async function publishBook(configPath: string, options: PublishOptions = {}) {
   const book = await loadBookConfig(configPath);
   const markdown = await buildBookMarkdown(book);
-  const profile = resolveProfile(options.profile ?? book.config.profile);
+  const profileName = options.profile ?? book.config.profile;
+  const profile = resolveProfile(profileName);
+  if (profileName && !profile) {
+    const available = ["a4", "letter", "book-6x9"].join(", ");
+    throw new Error(`Unknown profile '${profileName}'. Available: ${available}`);
+  }
 
   const outputPath =
     options.outputPath ??
