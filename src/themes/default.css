@@ -181,3 +181,8 @@ hr {
   page-break-after: always;
   break-after: page;
 }
+
+.section-break {
+  page-break-before: always;
+  break-before: page;
+}

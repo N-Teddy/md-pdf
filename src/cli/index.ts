@@ -5,6 +5,8 @@ import fg from "fast-glob";
 import chokidar from "chokidar";
 import prompts from "prompts";
 import { convertMarkdownToPdf } from "../index.js";
+import { publishBook } from "../book/publishBook.js";
+import { loadBookConfig } from "../book/loadBook.js";
 import { loadConfig } from "../config/loadConfig.js";
 
 const program = new Command();
@@ -113,6 +115,42 @@ program
   .action(async (inputArg, opts, cmd) => {
     await runConversion({ inputArg, opts, cmd, watch: true });
   });
+
+const bookCommand = new Command("book").description("Build a multi-chapter book project");
+
+bookCommand
+  .command("build")
+  .description("Build a book from book.yaml")
+  .option("--config <path>", "Book config file path", "book.yaml")
+  .option("-o, --output <file>", "Output PDF file")
+  .option("--profile <name>", "Print profile (a4, letter, book-6x9)")
+  .option("--renderer <name>", "Renderer: chromium or lite")
+  .option("--require-chromium", "Fail if Chromium cannot launch (no lite fallback)")
+  .action(async (opts) => {
+    await publishBook(opts.config, {
+      outputPath: opts.output,
+      profile: opts.profile,
+      renderer: opts.renderer,
+      requireChromium: opts.requireChromium
+    });
+    if (opts.output) {
+      console.log(`Generated ${opts.output}`);
+    }
+  });
+
+bookCommand
+  .command("preview")
+  .description("Watch a book project and rebuild on changes")
+  .option("--config <path>", "Book config file path", "book.yaml")
+  .option("-o, --output <file>", "Output PDF file")
+  .option("--profile <name>", "Print profile (a4, letter, book-6x9)")
+  .option("--renderer <name>", "Renderer: chromium or lite")
+  .option("--require-chromium", "Fail if Chromium cannot launch (no lite fallback)")
+  .action(async (opts) => {
+    await runBookPreview(opts);
+  });
+
+program.addCommand(bookCommand);
 
 program.addCommand(renderCommand, { isDefault: true });
 
@@ -262,6 +300,48 @@ async function runConversion({
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       runOnce().catch((err) => console.error(err));
+    }, 300);
+  });
+}
+
+async function runBookPreview(opts: {
+  config: string;
+  output?: string;
+  profile?: string;
+  renderer?: "chromium" | "lite";
+  requireChromium?: boolean;
+}) {
+  const configPath = path.resolve(opts.config);
+
+  const buildOnce = async () => {
+    await publishBook(configPath, {
+      outputPath: opts.output,
+      profile: opts.profile,
+      renderer: opts.renderer,
+      requireChromium: opts.requireChromium
+    });
+  };
+
+  const loaded = await loadBookConfig(configPath);
+  const outputPath =
+    opts.output ??
+    path.join(path.dirname(configPath), `${loaded.config.title ?? "book"}.pdf`);
+
+  await buildOnce();
+  console.log(`Generated ${outputPath}`);
+
+  const watchPaths = [configPath, ...loaded.chapters, ...loaded.appendices];
+  console.log("Watching book files...");
+
+  const watcher = chokidar.watch(watchPaths, { ignoreInitial: true });
+  let timer: NodeJS.Timeout | undefined;
+
+  watcher.on("all", () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      buildOnce()
+        .then(() => console.log(`Generated ${outputPath}`))
+        .catch((err) => console.error(err));
     }, 300);
   });
 }

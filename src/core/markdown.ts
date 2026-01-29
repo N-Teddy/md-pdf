@@ -12,6 +12,9 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { rehypeMermaid } from "./rehype-mermaid.js";
 import { rehypeShiki } from "./rehype-shiki.js";
 import { rehypeImages } from "./rehype-images.js";
+import { rehypePageBreaks } from "./rehype-page-breaks.js";
+import { remarkPageBreaks } from "./remark-page-breaks.js";
+import { remarkCrossRefs } from "./remark-cross-refs.js";
 import { remarkFormatCode } from "../formatters/remark-format-code.js";
 import type { FormatterOptions } from "../formatters/registry.js";
 
@@ -35,6 +38,8 @@ export async function markdownToHtml(markdown: string, options: MarkdownRenderOp
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkPageBreaks)
+    .use(remarkCrossRefs)
     .use(options.toc ? remarkToc : () => {})
     .use(options.frontmatter ? remarkFrontmatter : () => {})
     .use(options.math ? remarkMath : () => {})
@@ -50,6 +55,7 @@ export async function markdownToHtml(markdown: string, options: MarkdownRenderOp
     .use(remarkRehype, { allowDangerousHtml: false })
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
+    .use(rehypePageBreaks)
     .use(options.mermaid ? rehypeMermaid : () => {})
     .use(rehypeImages, { baseDir: options.baseDir, allowRemote: options.allowRemote })
     .use(rehypeShiki, {

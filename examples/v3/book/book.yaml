@@ -1,0 +1,9 @@
+title: "Sample Book"
+author: "md2pdf"
+profile: "a4"
+chapters:
+  - "chapters/01-intro.md"
+  - "chapters/02-layout.md"
+  - "chapters/03-references.md"
+appendices:
+  - "appendices/a-glossary.md"
