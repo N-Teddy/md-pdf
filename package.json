@@ -1,6 +1,6 @@
 {
 	"name": "@n-teddy/md-pdf",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Print-ready Markdown to PDF converter (CLI + API)",
 	"type": "module",
 	"main": "./dist/index.cjs",
