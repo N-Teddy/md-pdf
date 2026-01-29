@@ -68,6 +68,13 @@ body {
   line-height: 1.55;
 }
 
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 main.content {
   padding: 0;
 }
@@ -122,6 +129,13 @@ pre code {
 
 pre.shiki {
   background: var(--code-bg) !important;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+pre.shiki * {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 table {

@@ -30,6 +30,7 @@ export interface ConvertOptions {
   themeByLanguage?: Record<string, string>;
   renderer?: "chromium" | "lite";
   fallbackRenderer?: "lite" | "none";
+  requireChromium?: boolean;
   remarkPlugins?: any[];
   rehypePlugins?: any[];
   plugins?: MdPdfPlugin[];

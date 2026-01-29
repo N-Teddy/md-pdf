@@ -52,12 +52,10 @@ export async function markdownToHtml(markdown: string, options: MarkdownRenderOp
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
     .use(options.mermaid ? rehypeMermaid : () => {})
     .use(rehypeImages, { baseDir: options.baseDir, allowRemote: options.allowRemote })
-    .use(
-      rehypeShiki({
-        defaultTheme: options.shikiTheme,
-        themeByLanguage: options.themeByLanguage
-      })
-    )
+    .use(rehypeShiki, {
+      defaultTheme: options.shikiTheme,
+      themeByLanguage: options.themeByLanguage
+    })
     .use(options.math ? rehypeKatex : () => {})
     .use(options.rehypePlugins ?? [])
     .use(rehypeStringify, { allowDangerousHtml: false });

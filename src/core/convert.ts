@@ -48,6 +48,9 @@ export async function convertMarkdownToPdfInternal(
   options: ConvertOptions = {}
 ): Promise<Buffer | void> {
   const { markdown, baseDir, derivedTitle } = await resolveInput(input);
+  if (options.requireChromium && (options.renderer ?? DEFAULTS.renderer) !== "chromium") {
+    throw new Error("requireChromium can only be used with renderer: chromium");
+  }
   const resolved = {
     pageSize: options.pageSize ?? DEFAULTS.pageSize,
     margin: options.margin ?? DEFAULTS.margin,
@@ -65,7 +68,7 @@ export async function convertMarkdownToPdfInternal(
     timeoutMs: options.timeoutMs ?? DEFAULTS.timeoutMs,
     shikiTheme: options.shikiTheme ?? DEFAULTS.shikiTheme,
     renderer: options.renderer ?? DEFAULTS.renderer,
-    fallbackRenderer: options.fallbackRenderer ?? "lite",
+    fallbackRenderer: options.requireChromium ? "none" : options.fallbackRenderer ?? "lite",
     formatCode:
       (options.renderer ?? DEFAULTS.renderer) === "chromium"
         ? options.formatCode ?? true

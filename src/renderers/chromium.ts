@@ -1,4 +1,5 @@
 import { chromium } from "playwright";
+import fsSync from "node:fs";
 import type { PDFOptions } from "playwright";
 import type { RenderOptions, Renderer } from "./types.js";
 
@@ -6,7 +7,31 @@ export class ChromiumRenderer implements Renderer {
   name = "chromium" as const;
 
   async render(options: RenderOptions): Promise<Buffer> {
-    const browser = await chromium.launch({ headless: true });
+    const launchOptions: Parameters<typeof chromium.launch>[0] & { chromiumSandbox?: boolean } = {
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-seccomp-filter-sandbox",
+        "--disable-namespace-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--no-zygote",
+        "--single-process",
+        "--disable-crash-reporter",
+        "--disable-crashpad",
+        "--disable-breakpad",
+        "--disable-features=Crashpad"
+      ],
+      chromiumSandbox: false,
+      env: {
+        ...process.env,
+        CHROME_DISABLE_CRASHPAD: "1",
+        DISABLE_CRASHPAD: "1",
+        CHROME_CRASHPAD_PIPE_NAME: ""
+      }
+    };
+    const browser = await launchChromium(launchOptions);
     const blockedRequests: string[] = [];
 
     try {
@@ -89,4 +114,40 @@ function parseMargin(margin: string) {
   const left = parts[3] || right;
 
   return { top, right, bottom, left };
+}
+
+async function launchChromium(
+  launchOptions: Parameters<typeof chromium.launch>[0] & { chromiumSandbox?: boolean }
+) {
+  try {
+    return await chromium.launch(launchOptions);
+  } catch (error) {
+    const executablePath = resolveSystemChrome();
+    if (!executablePath) {
+      throw error;
+    }
+    console.warn(
+      `Playwright Chromium launch failed, retrying with system Chrome: ${executablePath}`
+    );
+    return chromium.launch({ ...launchOptions, executablePath });
+  }
+}
+
+function resolveSystemChrome(): string | undefined {
+  const candidates = [
+    process.env.CHROME_PATH,
+    process.env.GOOGLE_CHROME_PATH,
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser"
+  ].filter(Boolean) as string[];
+
+  for (const candidate of candidates) {
+    if (fsSync.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return undefined;
 }

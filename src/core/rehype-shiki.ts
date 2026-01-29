@@ -26,24 +26,32 @@ export function rehypeShiki(options: ShikiOptions) {
       const className = Array.isArray(code.properties?.className) ? code.properties?.className : [];
       const langClass = className.find((c) => String(c).startsWith("language-"));
       const rawLang = langClass ? String(langClass).replace("language-", "") : "text";
-      const lang = normalizeLanguage(rawLang);
+      const normalizedLang = normalizeLanguage(rawLang);
 
       const codeText = toString(code);
 
-      const themeForLang = resolveTheme(options.defaultTheme, options.themeByLanguage, lang, themes);
+      const themeForLang = resolveTheme(
+        options.defaultTheme,
+        options.themeByLanguage,
+        normalizedLang,
+        themes
+      );
 
       tasks.push(
         (async () => {
           try {
-            if (lang && lang !== "text") {
-              await highlighter.loadLanguage(lang);
+            const candidate = rawLang && rawLang !== "text" ? rawLang : undefined;
+            if (candidate) {
+              await highlighter.loadLanguage(candidate);
+            } else if (normalizedLang && normalizedLang !== "text") {
+              await highlighter.loadLanguage(normalizedLang);
             }
           } catch {
             // fallback to plain text
           }
 
           const highlighted = highlighter.codeToHtml(codeText, {
-            lang: lang || "text",
+            lang: rawLang || normalizedLang || "text",
             theme: themeForLang
           });
 

@@ -94,6 +94,7 @@ const renderCommand = new Command("render")
   .option("--theme-map <path>", "JSON map of language -> theme")
   .option("--allow-remote", "Allow remote images/assets")
   .option("--renderer <name>", "Renderer: chromium or lite")
+  .option("--require-chromium", "Fail if Chromium cannot launch (no lite fallback)")
   .option("--title <title>", "Header title")
   .option("--no-page-numbers", "Disable footer page numbers")
   .option("--config <path>", "Config file path")
@@ -108,6 +109,7 @@ program
   .option("--out-dir <dir>", "Output directory for multiple inputs")
   .option("--config <path>", "Config file path")
   .option("--renderer <name>", "Renderer: chromium or lite")
+  .option("--require-chromium", "Fail if Chromium cannot launch (no lite fallback)")
   .action(async (inputArg, opts, cmd) => {
     await runConversion({ inputArg, opts, cmd, watch: true });
   });
@@ -165,6 +167,7 @@ async function runConversion({
     "themeMap",
     "allowRemote",
     "renderer",
+    "requireChromium",
     "title",
     "pageNumbers"
   ]);
@@ -228,6 +231,7 @@ async function runConversion({
           allowRemote: cliOptions.allowRemote ?? config.allowRemote,
           renderer: cliOptions.renderer ?? config.renderer,
           fallbackRenderer: config.fallbackRenderer,
+          requireChromium: cliOptions.requireChromium ?? config.requireChromium,
           header: cliOptions.title ? { title: cliOptions.title } : config.header,
           footer: {
             pageNumbers:
