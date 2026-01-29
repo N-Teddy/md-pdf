@@ -36,10 +36,13 @@ jobs:
 
   release:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # skip if this push is the auto release commit to avoid loops
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore: release')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -47,12 +50,35 @@ jobs:
           cache: pnpm
       - name: Install
         run: pnpm install --frozen-lockfile
-      - name: Create release PR or publish
-        uses: changesets/action@v1
-        with:
-          publish: pnpm run release
-          commit: "chore: release"
-          title: "chore: release"
+      - name: Configure git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Version packages (if changesets present)
+        run: |
+          if ls .changeset/*.md >/dev/null 2>&1; then
+            pnpm changeset version
+          else
+            echo "No changesets found; skipping version."
+          fi
+      - name: Install updated deps
+        run: pnpm install --frozen-lockfile
+      - name: Commit version bump
+        run: |
+          if git diff --quiet; then
+            echo "No version changes to commit."
+          else
+            git add .
+            git commit -m "chore: release"
+            git push origin HEAD
+          fi
+      - name: Build
+        run: pnpm build
+      - name: Configure npm auth
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to npm via Changesets
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm changeset publish
