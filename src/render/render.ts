@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { chromium } from "playwright";
 import { buildHeaderFooterTemplates } from "./headerFooter.js";
 
@@ -41,7 +40,7 @@ export async function renderPdf(options: RenderPdfOptions): Promise<Buffer> {
 			});
 		}
 
-		await page.setContent(options.html, { waitUntil: "load" });
+		await page.setContent(options.html);
 		await page.emulateMedia({ media: "print" });
 		await page.evaluate(() => (document as any).fonts?.ready ?? Promise.resolve());
 
@@ -60,10 +59,10 @@ export async function renderPdf(options: RenderPdfOptions): Promise<Buffer> {
 			await page.evaluate(() => (document as any).fonts?.ready ?? Promise.resolve());
 		}
 
-		const { headerTemplate, footerTemplate, displayHeaderFooter } = buildHeaderFooterTemplates(
-			options.header,
-			options.footer
-		);
+		const { headerTemplate, footerTemplate, displayHeaderFooter } = buildHeaderFooterTemplates({
+			header: options.header,
+			footer: options.footer
+		});
 
 		const pdfOptions: any = {
 			printBackground: true,
@@ -78,9 +77,9 @@ export async function renderPdf(options: RenderPdfOptions): Promise<Buffer> {
 			const [width, height] = pageSize.split("x").map((v) => v.trim());
 			pdfOptions.width = width;
 			pdfOptions.height = height;
-		} else {
-			pdfOptions.format = pageSize as PDFOptions["format"];
-		}
+	} else {
+		pdfOptions.format = pageSize;
+	}
 
 		const pdf = await page.pdf(pdfOptions);
 

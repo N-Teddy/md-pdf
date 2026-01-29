@@ -17,7 +17,6 @@ export function remarkFormatCode(options: FormatCodeOptions) {
 
       tasks.push(
         (async () => {
-          // @ts-ignore lang is normalized to string
           const formatted = await formatCode(codeNode.value, lang, options.formatter);
           if (formatted !== null) {
             codeNode.value = formatted;

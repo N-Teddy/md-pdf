@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { unified } from "unified";
+import { unified, type Plugin } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -46,13 +45,7 @@ export async function markdownToHtml(markdown: string, options: MarkdownRenderOp
     .use(options.math ? remarkMath : () => {})
     .use(options.formatCode ? remarkFormatCode({ formatter: options.formatter }) : () => {})
     .use(options.remarkPlugins ?? [])
-    .use(function postParseHookPlugin() {
-      return async (tree: unknown) => {
-        if (options.postParseHook) {
-          await options.postParseHook(tree);
-        }
-      };
-    })
+    .use(createPostParseHook(options))
     .use(remarkRehype, { allowDangerousHtml: false })
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
@@ -69,4 +62,12 @@ export async function markdownToHtml(markdown: string, options: MarkdownRenderOp
 
   const file = await processor.process(markdown);
   return String(file);
+}
+
+function createPostParseHook(options: MarkdownRenderOptions): Plugin {
+  return () => async (tree: unknown) => {
+    if (options.postParseHook) {
+      await options.postParseHook(tree);
+    }
+  };
 }

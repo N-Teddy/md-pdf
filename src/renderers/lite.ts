@@ -1,4 +1,3 @@
-// @ts-nocheck
 import PDFDocument from "pdfkit";
 import { htmlToText } from "html-to-text";
 import type { RenderOptions, Renderer } from "./types.js";
@@ -38,8 +37,9 @@ export class LiteRenderer implements Renderer {
   }
 }
 
-function parseMargin(margin: string) {
-  const parts = margin.split(",").map((part) => part.trim());
+function parseMargin(margin: string | undefined) {
+  const source = margin ?? "72,72,72,72";
+  const parts = source.split(",").map((part) => part.trim());
   const top = parts[0] || "72";
   const right = parts[1] || top;
   const bottom = parts[2] || top;

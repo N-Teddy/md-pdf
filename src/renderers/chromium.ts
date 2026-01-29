@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { chromium } from "playwright";
 import fsSync from "node:fs";
 import type { RenderOptions, Renderer } from "./types.js";
@@ -55,7 +54,7 @@ export class ChromiumRenderer implements Renderer {
         });
       }
 
-      await page.setContent(options.html, { waitUntil: "load" });
+      await page.setContent(options.html);
       await page.emulateMedia({ media: "print" });
       await page.evaluate(() => (document as any).fonts?.ready ?? Promise.resolve());
 
@@ -88,7 +87,7 @@ export class ChromiumRenderer implements Renderer {
         pdfOptions.width = width;
         pdfOptions.height = height;
       } else {
-        pdfOptions.format = pageSize as PDFOptions["format"];
+        pdfOptions.format = pageSize;
       }
 
       const pdf = await page.pdf(pdfOptions);
