@@ -46,6 +46,7 @@
     "mermaid": "^10.9.1",
     "pdfkit": "^0.15.0",
     "playwright": "^1.48.0",
+    "prompts": "^2.4.2",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-katex": "^7.0.1",
     "rehype-slug": "^6.0.0",

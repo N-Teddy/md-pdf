@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import fg from "fast-glob";
 import chokidar from "chokidar";
+import prompts from "prompts";
 import { convertMarkdownToPdf } from "../index.js";
 import { loadConfig } from "../config/loadConfig.js";
 
@@ -65,6 +66,13 @@ program
     console.log(`Created ${themeDir}`);
   });
 
+program
+  .command("wizard")
+  .description("Interactive setup to generate PDFs")
+  .action(async () => {
+    await runWizard();
+  });
+
 const renderCommand = new Command("render")
   .argument("[input]", "Markdown file, glob, or folder")
   .option("-o, --output <file>", "Output PDF file (single input)")
@@ -106,7 +114,21 @@ program
 
 program.addCommand(renderCommand, { isDefault: true });
 
-program.parse(process.argv);
+const rawArgs = process.argv.slice(2);
+if (rawArgs.length === 0) {
+  if (isInteractive()) {
+    runWizard().catch((err) => {
+      console.error(err instanceof Error ? err.message : String(err));
+      process.exit(2);
+    });
+  } else {
+    console.error("No args provided. Run in a TTY for interactive mode or pass CLI flags.");
+    program.outputHelp();
+    process.exit(1);
+  }
+} else {
+  program.parse(process.argv);
+}
 
 async function runConversion({
   inputArg,
@@ -240,6 +262,292 @@ async function runConversion({
   });
 }
 
+async function runWizard() {
+  if (!isInteractive()) {
+    console.error("Interactive wizard requires a TTY.");
+    process.exit(1);
+  }
+
+  const onCancel = () => {
+    console.error("Wizard cancelled.");
+    process.exit(1);
+  };
+
+  const inputAnswer = await prompts(
+    {
+      type: "text",
+      name: "input",
+      message: "Enter input path (file, folder, or glob)",
+      validate: async (value) => {
+        if (!value) return "Input is required";
+        const inputs = await resolveInputs(value);
+        return inputs.length > 0 ? true : "No inputs found for this input";
+      }
+    },
+    { onCancel }
+  );
+
+  if (!inputAnswer.input) {
+    process.exit(1);
+  }
+
+  const inputs = await resolveInputs(inputAnswer.input);
+  const multiple = inputs.length > 1;
+
+  const outputAnswer = await prompts(
+    {
+      type: "text",
+      name: multiple ? "outDir" : "output",
+      message: multiple ? "Enter output directory" : "Enter output PDF path",
+      initial: multiple
+        ? "./output"
+        : path.join(
+            path.dirname(inputs[0]),
+            `${path.basename(inputs[0], path.extname(inputs[0]))}.pdf`
+          ),
+      validate: (value) => (value ? true : "Output path is required")
+    },
+    { onCancel }
+  );
+
+  const rendererAnswer = await prompts(
+    {
+      type: "select",
+      name: "renderer",
+      message: "Choose renderer",
+      choices: [
+        { title: "Chromium (print-ready)", value: "chromium" },
+        { title: "Lite (fallback)", value: "lite" }
+      ],
+      initial: 0
+    },
+    { onCancel }
+  );
+
+  const themeModeAnswer = await prompts(
+    {
+      type: "select",
+      name: "themeMode",
+      message: "Theme source",
+      choices: [
+        { title: "Default theme", value: "default" },
+        { title: "Custom theme file", value: "file" },
+        { title: "Custom theme directory", value: "dir" }
+      ],
+      initial: 0
+    },
+    { onCancel }
+  );
+
+  let themeFile: string | undefined;
+  let themeDir: string | undefined;
+  if (themeModeAnswer.themeMode === "file") {
+    const answer = await prompts(
+      {
+        type: "text",
+        name: "themeFile",
+        message: "Path to theme CSS file",
+        validate: async (value) => {
+          if (!value) return "Theme file path is required";
+          try {
+            await fs.access(path.resolve(value));
+            return true;
+          } catch {
+            return "Theme file not found";
+          }
+        }
+      },
+      { onCancel }
+    );
+    themeFile = answer.themeFile;
+  } else if (themeModeAnswer.themeMode === "dir") {
+    const answer = await prompts(
+      {
+        type: "text",
+        name: "themeDir",
+        message: "Path to theme directory",
+        validate: async (value) => {
+          if (!value) return "Theme directory is required";
+          try {
+            const stat = await fs.stat(path.resolve(value));
+            return stat.isDirectory() ? true : "Theme path must be a directory";
+          } catch {
+            return "Theme directory not found";
+          }
+        }
+      },
+      { onCancel }
+    );
+    themeDir = answer.themeDir;
+  }
+
+  const featureAnswers = await prompts(
+    [
+      {
+        type: rendererAnswer.renderer === "chromium" ? "toggle" : null,
+        name: "formatCode",
+        message: "Format code blocks? (chromium only)",
+        initial: true,
+        active: "yes",
+        inactive: "no"
+      },
+      { type: "toggle", name: "toc", message: "Generate table of contents?", initial: false },
+      { type: "toggle", name: "footnotes", message: "Enable footnotes?", initial: true },
+      { type: "toggle", name: "mermaid", message: "Enable Mermaid diagrams?", initial: false },
+      { type: "toggle", name: "math", message: "Enable math (KaTeX)?", initial: false },
+      { type: "toggle", name: "frontmatter", message: "Enable frontmatter?", initial: true },
+      { type: "toggle", name: "allowRemote", message: "Allow remote assets?", initial: false }
+    ],
+    { onCancel }
+  );
+
+  const coverAnswer = await prompts(
+    {
+      type: "text",
+      name: "coverPath",
+      message: "Cover page markdown (optional)",
+      validate: async (value) => {
+        if (!value) return true;
+        try {
+          await fs.access(path.resolve(value));
+          return true;
+        } catch {
+          return "Cover file not found";
+        }
+      }
+    },
+    { onCancel }
+  );
+
+  const headerAnswer = await prompts(
+    {
+      type: "text",
+      name: "title",
+      message: "Header title (optional)"
+    },
+    { onCancel }
+  );
+
+  const footerAnswer = await prompts(
+    {
+      type: "toggle",
+      name: "pageNumbers",
+      message: "Show page numbers in footer?",
+      initial: true,
+      active: "yes",
+      inactive: "no"
+    },
+    { onCancel }
+  );
+
+  const saveAnswer = await prompts(
+    {
+      type: "toggle",
+      name: "saveConfig",
+      message: "Save these options to md2pdf.config.json?",
+      initial: false,
+      active: "yes",
+      inactive: "no"
+    },
+    { onCancel }
+  );
+
+  if (saveAnswer.saveConfig) {
+    const configPath = path.join(process.cwd(), "md2pdf.config.json");
+    const exists = await fileExists(configPath);
+    if (exists) {
+      const overwrite = await prompts(
+        {
+          type: "toggle",
+          name: "overwrite",
+          message: "Config file exists. Overwrite?",
+          initial: false,
+          active: "yes",
+          inactive: "no"
+        },
+        { onCancel }
+      );
+      if (!overwrite.overwrite) {
+        console.log("Keeping existing config file.");
+      } else {
+        await writeWizardConfig(configPath, {
+          inputs: inputAnswer.input,
+          output: outputAnswer.output,
+          outDir: outputAnswer.outDir,
+          renderer: rendererAnswer.renderer,
+          theme: themeModeAnswer.themeMode === "default" ? "default" : undefined,
+          themeFile,
+          themeDir,
+          coverPath: coverAnswer.coverPath || undefined,
+          toc: featureAnswers.toc,
+          footnotes: featureAnswers.footnotes,
+          mermaid: featureAnswers.mermaid,
+          math: featureAnswers.math,
+          frontmatter: featureAnswers.frontmatter,
+          allowRemote: featureAnswers.allowRemote,
+          formatCode: featureAnswers.formatCode,
+          header: headerAnswer.title ? { title: headerAnswer.title } : undefined,
+          footer: { pageNumbers: footerAnswer.pageNumbers }
+        });
+      }
+    } else {
+      await writeWizardConfig(configPath, {
+        inputs: inputAnswer.input,
+        output: outputAnswer.output,
+        outDir: outputAnswer.outDir,
+        renderer: rendererAnswer.renderer,
+        theme: themeModeAnswer.themeMode === "default" ? "default" : undefined,
+        themeFile,
+        themeDir,
+        coverPath: coverAnswer.coverPath || undefined,
+        toc: featureAnswers.toc,
+        footnotes: featureAnswers.footnotes,
+        mermaid: featureAnswers.mermaid,
+        math: featureAnswers.math,
+        frontmatter: featureAnswers.frontmatter,
+        allowRemote: featureAnswers.allowRemote,
+        formatCode: featureAnswers.formatCode,
+        header: headerAnswer.title ? { title: headerAnswer.title } : undefined,
+        footer: { pageNumbers: footerAnswer.pageNumbers }
+      });
+      console.log(`Saved ${configPath}`);
+    }
+  }
+
+  for (const inputPath of inputs) {
+    await assertFileExists(inputPath);
+    const outputPath = outputAnswer.output
+      ? outputAnswer.output
+      : path.join(
+          outputAnswer.outDir,
+          `${path.basename(inputPath, path.extname(inputPath))}.pdf`
+        );
+
+    await convertMarkdownToPdf(
+      { inputPath },
+      {
+        outputPath,
+        theme: themeModeAnswer.themeMode === "default" ? "default" : undefined,
+        themeFile,
+        themeDir,
+        coverPath: coverAnswer.coverPath || undefined,
+        toc: featureAnswers.toc,
+        footnotes: featureAnswers.footnotes,
+        mermaid: featureAnswers.mermaid,
+        math: featureAnswers.math,
+        frontmatter: featureAnswers.frontmatter,
+        allowRemote: featureAnswers.allowRemote,
+        renderer: rendererAnswer.renderer,
+        formatCode: rendererAnswer.renderer === "chromium" ? featureAnswers.formatCode : false,
+        header: headerAnswer.title ? { title: headerAnswer.title } : undefined,
+        footer: { pageNumbers: footerAnswer.pageNumbers }
+      }
+    );
+
+    console.log(`Generated ${outputPath}`);
+  }
+}
+
 function pickCliOptions(cmd: Command, opts: Record<string, any>, keys: string[]) {
   const result: Record<string, any> = {};
   for (const key of keys) {
@@ -289,6 +597,17 @@ async function fileExists(filePath: string) {
   } catch {
     return false;
   }
+}
+
+async function writeWizardConfig(
+  configPath: string,
+  config: Record<string, unknown>
+) {
+  await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+}
+
+function isInteractive() {
+  return Boolean(process.stdin.isTTY && process.stdout.isTTY);
 }
 
 function mergeFormatterOptions(

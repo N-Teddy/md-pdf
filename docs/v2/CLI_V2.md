@@ -3,7 +3,11 @@
 ## Commands
 - `md2pdf <input> [options]`
 - `md2pdf init` (scaffold config + theme)
+- `md2pdf wizard` (interactive prompt)
 - `md2pdf watch <input>` (watch & re-render)
+
+Notes:
+- Running `md2pdf` with no args in a TTY launches the wizard.
 
 ## Key Flags
 - `--out-dir <dir>`
