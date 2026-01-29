@@ -1,5 +1,5 @@
 {
-	"name": "md-pdf",
+	"name": "@n-teddy/md-pdf",
 	"version": "0.1.0",
 	"description": "Print-ready Markdown to PDF converter (CLI + API)",
 	"type": "module",
