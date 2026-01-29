@@ -80,6 +80,10 @@ const renderCommand = new Command("render")
   .option("--mermaid", "Enable Mermaid diagrams")
   .option("--math", "Enable KaTeX math")
   .option("--frontmatter", "Enable frontmatter parsing")
+  .option("--format-code", "Format code blocks (chromium only)")
+  .option("--formatter-print-width <n>", "Prettier print width", Number.parseInt)
+  .option("--formatter-tabs", "Use tabs for formatted code")
+  .option("--theme-map <path>", "JSON map of language -> theme")
   .option("--allow-remote", "Allow remote images/assets")
   .option("--renderer <name>", "Renderer: chromium or lite")
   .option("--title <title>", "Header title")
@@ -133,6 +137,10 @@ async function runConversion({
     "mermaid",
     "math",
     "frontmatter",
+    "formatCode",
+    "formatterPrintWidth",
+    "formatterTabs",
+    "themeMap",
     "allowRemote",
     "renderer",
     "title",
@@ -155,6 +163,9 @@ async function runConversion({
 
   const outDir = cliOptions.outDir ?? config.outDir;
   const outputSingle = cliOptions.output ?? config.output;
+  const formatterFromConfig = config.formatter ?? {};
+  const formatter = mergeFormatterOptions(formatterFromConfig, cliOptions);
+  const themeByLanguage = await loadThemeMap(cliOptions.themeMap, config.themeByLanguage);
 
   if (inputs.length > 1 && !outDir) {
     console.error("Multiple inputs require --out-dir or config.outDir");
@@ -189,6 +200,9 @@ async function runConversion({
           mermaid: cliOptions.mermaid ?? config.mermaid,
           math: cliOptions.math ?? config.math,
           frontmatter: cliOptions.frontmatter ?? config.frontmatter,
+          formatCode: cliOptions.formatCode ?? config.formatCode,
+          formatter,
+          themeByLanguage,
           allowRemote: cliOptions.allowRemote ?? config.allowRemote,
           renderer: cliOptions.renderer ?? config.renderer,
           fallbackRenderer: config.fallbackRenderer,
@@ -275,4 +289,34 @@ async function fileExists(filePath: string) {
   } catch {
     return false;
   }
+}
+
+function mergeFormatterOptions(
+  base: { useTabs?: boolean; printWidth?: number; tabWidth?: number },
+  cliOptions: Record<string, any>
+) {
+  const result = { ...base };
+  if (cliOptions.formatterPrintWidth !== undefined) {
+    const value = Number(cliOptions.formatterPrintWidth);
+    if (Number.isFinite(value)) {
+      result.printWidth = value;
+    }
+  }
+  if (cliOptions.formatterTabs !== undefined) {
+    result.useTabs = Boolean(cliOptions.formatterTabs);
+  }
+  return result;
+}
+
+async function loadThemeMap(
+  cliPath: string | undefined,
+  configMap: Record<string, string> | undefined
+) {
+  let cliMap: Record<string, string> | undefined;
+  if (cliPath) {
+    const raw = await fs.readFile(path.resolve(cliPath), "utf8");
+    cliMap = JSON.parse(raw) as Record<string, string>;
+  }
+  if (!configMap && !cliMap) return undefined;
+  return { ...(configMap ?? {}), ...(cliMap ?? {}) };
 }

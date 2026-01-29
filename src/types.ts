@@ -25,6 +25,9 @@ export interface ConvertOptions {
   math?: boolean;
   frontmatter?: boolean;
   allowRemote?: boolean;
+  formatCode?: boolean;
+  formatter?: { useTabs?: boolean; printWidth?: number; tabWidth?: number };
+  themeByLanguage?: Record<string, string>;
   renderer?: "chromium" | "lite";
   fallbackRenderer?: "lite" | "none";
   remarkPlugins?: any[];

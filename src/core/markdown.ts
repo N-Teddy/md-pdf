@@ -12,6 +12,8 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { rehypeMermaid } from "./rehype-mermaid.js";
 import { rehypeShiki } from "./rehype-shiki.js";
 import { rehypeImages } from "./rehype-images.js";
+import { remarkFormatCode } from "../formatters/remark-format-code.js";
+import type { FormatterOptions } from "../formatters/registry.js";
 
 export interface MarkdownRenderOptions {
   baseDir: string;
@@ -20,7 +22,10 @@ export interface MarkdownRenderOptions {
   math: boolean;
   frontmatter: boolean;
   allowRemote: boolean;
+  formatCode: boolean;
+  formatter: FormatterOptions;
   shikiTheme: string;
+  themeByLanguage?: Record<string, string>;
   remarkPlugins?: any[];
   rehypePlugins?: any[];
   postParseHook?: (mdast: unknown) => Promise<void> | void;
@@ -33,6 +38,7 @@ export async function markdownToHtml(markdown: string, options: MarkdownRenderOp
     .use(options.toc ? remarkToc : () => {})
     .use(options.frontmatter ? remarkFrontmatter : () => {})
     .use(options.math ? remarkMath : () => {})
+    .use(options.formatCode ? remarkFormatCode({ formatter: options.formatter }) : () => {})
     .use(options.remarkPlugins ?? [])
     .use(function postParseHook() {
       return async (tree: unknown) => {
@@ -46,7 +52,12 @@ export async function markdownToHtml(markdown: string, options: MarkdownRenderOp
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
     .use(options.mermaid ? rehypeMermaid : () => {})
     .use(rehypeImages, { baseDir: options.baseDir, allowRemote: options.allowRemote })
-    .use(rehypeShiki({ theme: options.shikiTheme }))
+    .use(
+      rehypeShiki({
+        defaultTheme: options.shikiTheme,
+        themeByLanguage: options.themeByLanguage
+      })
+    )
     .use(options.math ? rehypeKatex : () => {})
     .use(options.rehypePlugins ?? [])
     .use(rehypeStringify, { allowDangerousHtml: false });

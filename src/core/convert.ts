@@ -29,6 +29,20 @@ const DEFAULTS = {
   renderer: "chromium" as const
 };
 
+const DEFAULT_THEME_BY_LANGUAGE: Record<string, string> = {
+  js: "github-light",
+  ts: "github-light",
+  jsx: "github-light",
+  tsx: "github-light",
+  json: "github-light",
+  html: "light-plus",
+  css: "one-light",
+  scss: "one-light",
+  md: "min-light",
+  yaml: "github-light",
+  graphql: "light-plus"
+};
+
 export async function convertMarkdownToPdfInternal(
   input: ConvertInput,
   options: ConvertOptions = {}
@@ -52,6 +66,19 @@ export async function convertMarkdownToPdfInternal(
     shikiTheme: options.shikiTheme ?? DEFAULTS.shikiTheme,
     renderer: options.renderer ?? DEFAULTS.renderer,
     fallbackRenderer: options.fallbackRenderer ?? "lite",
+    formatCode:
+      (options.renderer ?? DEFAULTS.renderer) === "chromium"
+        ? options.formatCode ?? true
+        : false,
+    formatter: {
+      useTabs: options.formatter?.useTabs ?? true,
+      printWidth: options.formatter?.printWidth,
+      tabWidth: options.formatter?.tabWidth
+    },
+    themeByLanguage:
+      (options.renderer ?? DEFAULTS.renderer) === "chromium"
+        ? { ...DEFAULT_THEME_BY_LANGUAGE, ...(options.themeByLanguage ?? {}) }
+        : undefined,
     remarkPlugins: options.remarkPlugins,
     rehypePlugins: options.rehypePlugins
   };
@@ -96,7 +123,10 @@ export async function convertMarkdownToPdfInternal(
     math: resolved.math,
     frontmatter: resolved.frontmatter,
     allowRemote: resolved.allowRemote,
+    formatCode: resolved.formatCode,
+    formatter: resolved.formatter,
     shikiTheme: resolved.shikiTheme,
+    themeByLanguage: resolved.themeByLanguage,
     remarkPlugins: resolved.remarkPlugins,
     rehypePlugins: resolved.rehypePlugins,
     postParseHook: (mdast) => runPostParse(mdast, plugins, ctx)
@@ -112,7 +142,10 @@ export async function convertMarkdownToPdfInternal(
       math: resolved.math,
       frontmatter: resolved.frontmatter,
       allowRemote: resolved.allowRemote,
+      formatCode: resolved.formatCode,
+      formatter: resolved.formatter,
       shikiTheme: resolved.shikiTheme,
+      themeByLanguage: resolved.themeByLanguage,
       remarkPlugins: resolved.remarkPlugins,
       rehypePlugins: resolved.rehypePlugins
     });

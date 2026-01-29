@@ -12,6 +12,9 @@ export interface MdPdfConfig {
   themeDir?: string;
   themeFile?: string;
   themeOverrides?: Record<string, string>;
+  formatCode?: boolean;
+  formatter?: { useTabs?: boolean; printWidth?: number; tabWidth?: number };
+  themeByLanguage?: Record<string, string>;
   pageSize?: string;
   margin?: string;
   toc?: boolean;

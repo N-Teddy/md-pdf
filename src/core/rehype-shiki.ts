@@ -1,27 +1,18 @@
 import { toString } from "hast-util-to-string";
 import { fromHtml } from "hast-util-from-html";
 import type { Root, Element } from "hast";
-import { createHighlighter } from "shiki";
+import { createHighlighter, type Highlighter } from "shiki";
 
 export interface ShikiOptions {
-	theme: string;
+  defaultTheme: string;
+  themeByLanguage?: Record<string, string>;
 }
 
-let highlighterPromise: ReturnType<typeof createHighlighter> | null = null;
-
-async function getHighlighter(theme: string) {
-	if (!highlighterPromise) {
-		highlighterPromise = createHighlighter({
-			themes: [theme],
-			langs: []
-		});
-	}
-	return highlighterPromise;
-}
+const highlighterCache = new Map<string, { highlighter: Highlighter; themes: Set<string> }>();
 
 export function rehypeShiki(options: ShikiOptions) {
   return async (tree: Root) => {
-    const highlighter = await getHighlighter(options.theme);
+    const { highlighter, themes } = await getHighlighter(options.defaultTheme, options.themeByLanguage);
 
     const tasks: Array<Promise<void>> = [];
 
@@ -32,29 +23,32 @@ export function rehypeShiki(options: ShikiOptions) {
       const code = node.children[0] as Element | undefined;
       if (!code || code.tagName !== "code") return;
 
-			const className = Array.isArray(code.properties?.className) ? code.properties?.className : [];
-			const langClass = className.find((c) => String(c).startsWith("language-"));
-			const lang = langClass ? String(langClass).replace("language-", "") : "text";
+      const className = Array.isArray(code.properties?.className) ? code.properties?.className : [];
+      const langClass = className.find((c) => String(c).startsWith("language-"));
+      const rawLang = langClass ? String(langClass).replace("language-", "") : "text";
+      const lang = normalizeLanguage(rawLang);
 
-			const codeText = toString(code);
+      const codeText = toString(code);
 
-			tasks.push(
-				(async () => {
-					try {
-						if (lang && lang !== "text") {
-							await highlighter.loadLanguage(lang);
-						}
-					} catch {
-						// fallback to plain text
-					}
+      const themeForLang = resolveTheme(options.defaultTheme, options.themeByLanguage, lang, themes);
 
-					const highlighted = highlighter.codeToHtml(codeText, {
-						lang: lang || "text",
-						theme: options.theme
-					});
+      tasks.push(
+        (async () => {
+          try {
+            if (lang && lang !== "text") {
+              await highlighter.loadLanguage(lang);
+            }
+          } catch {
+            // fallback to plain text
+          }
 
-					const fragment = fromHtml(highlighted, { fragment: true });
-					const replacement = fragment.children[0] as Element | undefined;
+          const highlighted = highlighter.codeToHtml(codeText, {
+            lang: lang || "text",
+            theme: themeForLang
+          });
+
+          const fragment = fromHtml(highlighted, { fragment: true });
+          const replacement = fragment.children[0] as Element | undefined;
           if (replacement) {
             parent.children[index] = replacement;
           }
@@ -64,6 +58,60 @@ export function rehypeShiki(options: ShikiOptions) {
 
     await Promise.all(tasks);
   };
+}
+
+async function getHighlighter(defaultTheme: string, themeByLanguage?: Record<string, string>) {
+  const themeList = buildThemeList(defaultTheme, themeByLanguage);
+  const key = themeList.join("|");
+
+  const cached = highlighterCache.get(key);
+  if (cached) return cached;
+
+  try {
+    const highlighter = await createHighlighter({ themes: themeList, langs: [] });
+    const entry = { highlighter, themes: new Set(themeList) };
+    highlighterCache.set(key, entry);
+    return entry;
+  } catch {
+    const highlighter = await createHighlighter({ themes: [defaultTheme], langs: [] });
+    const entry = { highlighter, themes: new Set([defaultTheme]) };
+    highlighterCache.set(defaultTheme, entry);
+    return entry;
+  }
+}
+
+function buildThemeList(defaultTheme: string, themeByLanguage?: Record<string, string>) {
+  const set = new Set<string>([defaultTheme]);
+  if (themeByLanguage) {
+    for (const value of Object.values(themeByLanguage)) {
+      if (value) set.add(value);
+    }
+  }
+  return Array.from(set).sort();
+}
+
+function resolveTheme(
+  defaultTheme: string,
+  themeByLanguage: Record<string, string> | undefined,
+  lang: string,
+  themes: Set<string>
+) {
+  const mapped = themeByLanguage?.[lang];
+  if (mapped && themes.has(mapped)) return mapped;
+  return themes.has(defaultTheme) ? defaultTheme : Array.from(themes)[0];
+}
+
+function normalizeLanguage(lang: string) {
+  const cleaned = lang.split(/\s+/)[0].toLowerCase();
+  if (!cleaned) return "text";
+
+  const aliases: Record<string, string> = {
+    javascript: "js",
+    typescript: "ts",
+    yml: "yaml"
+  };
+
+  return aliases[cleaned] ?? cleaned;
 }
 
 function walkTree(
